@@ -4,7 +4,7 @@ import { FilePlus, Clock, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { TransferRequest, STATUS_LABELS, STATUS_COLORS } from '@/types'
-import { formatDate, formatCurrency, getCurrentMonthYear } from '@/lib/utils'
+import { formatCurrency, getCurrentMonthYear } from '@/lib/utils'
 
 export default function SiteDashboard() {
   const { profile } = useAuth()
