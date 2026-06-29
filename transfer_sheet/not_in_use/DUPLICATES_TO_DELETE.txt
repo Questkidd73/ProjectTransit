@@ -1,0 +1,138 @@
+═══════════════════════════════════════════════════════════════════
+COMPLETE DUPLICATE CONSTITUENT LIST - CREATED NOV 19, 2025
+═══════════════════════════════════════════════════════════════════
+
+ALL DUPLICATE NXT IDs TO DELETE:
+77105 77106 77107 77108 77109 77110 77111 77112 77113 77114 77115 77116
+77117 77118 77119 77120 77121 77122 77123 77124 77125 77126 77127 77128
+77129 77130 77131 77132 77133 77134 77135 77136 77137 77138 77139 77140
+77141 77142 77143 77144 77145 77146 77147 77148 77149 77150 77151 77152
+77153 77154 77155 77156 77157 77158 77159 77160 77164 77168 77169 77170
+77171 77175 77177 77178 77179 77181 77182 77183
+
+═══════════════════════════════════════════════════════════════════
+
+EVENT 2048 - Unknown (1 duplicate)
+  77105 -> SR 180426 -> Original 49725
+
+EVENT 2097 - Unknown (11 duplicates)
+  77106 -> SR 199827 -> Original 75105
+  77107 -> SR 198806 -> Original 10958
+  77108 -> SR 199479 -> Original 75072
+  77109 -> SR 200118 -> Original 75133
+  77110 -> SR 200198 -> Original 76153
+  77111 -> SR 199950 -> Original 75123
+  77112 -> SR 203075 -> Original 76549
+  77113 -> SR 199951 -> Original 75124
+  77114 -> SR 200064 -> Original 75134
+  77115 -> SR 199981 -> Original 75126
+  77116 -> SR 200119 -> Original 75135
+
+EVENT 2105 - MTY Reger Trip 251121 (9 duplicates)
+  77117 -> SR 200368 -> Original 26035
+  77118 -> SR 201635 -> Original 76408
+  77119 -> SR 201859 -> Original 76409
+  77120 -> SR 201637 -> Original 76410
+  77121 -> SR 201761 -> Original 76411
+  77122 -> SR 202178 -> Original 76412
+  77123 -> SR 201858 -> Original 76409
+  77124 -> SR 201860 -> Original 40130
+  77125 -> SR 201634 -> Original 76414
+
+EVENT 2106 - MTY Scarlett Treece 260110 (10 duplicates) ✓ CLEANED
+  77127 -> SR 206246 -> Original 77083
+  77128 -> SR 209418 -> Original 67536
+  77129 -> SR 206315 -> Original 52804
+  77130 -> SR 208561 -> Original 76961
+  77131 -> SR 206243 -> Original 67531
+  77132 -> SR 210006 -> Original 67534
+  77133 -> SR 206245 -> Original 67532
+  77134 -> SR 206445 -> Original 67540
+  77135 -> SR 206055 -> Original 76837
+  77136 -> SR 205693 -> Original 67227
+
+EVENT 2111 - CUN Messner (7 duplicates)
+  77137 -> SR 207184 -> Original 76902
+  77138 -> SR 210371 -> Original 77068
+  77139 -> SR 210392 -> Original 3891
+  77140 -> SR 210393 -> Original 7164
+  77141 -> SR 210052 -> Original 77040
+  77142 -> SR 209989 -> Original 77033
+  77143 -> SR 210270 -> Original 77078
+
+EVENT 2108 - MTY Eastmont Church 260207 (13 duplicates)
+  77144 -> SR 210280 -> Original 77079
+  77145 -> SR 207843 -> Original 76950
+  77146 -> SR 208063 -> Original 76955
+  77147 -> SR 208604 -> Original 76962
+  77148 -> SR 205699 -> Original 76827
+  77149 -> SR 207898 -> Original 76952
+  77150 -> SR 207679 -> Original 76945
+  77151 -> SR 207686 -> Original 76946
+  77152 -> SR 208200 -> Original 76963
+  77153 -> SR 208154 -> Original 76956
+  77154 -> SR 210278 -> Original 77080
+  77155 -> SR 208198 -> Original 76964
+  77156 -> SR 207699 -> Original 76951
+
+EVENT 2109 - MTY Kings HS 260214 (3 duplicates)
+  77160 -> SR 210377 -> Original 77081
+  77164 -> SR 206579 -> Original 76885
+  77168 -> SR 206691 -> Original 76888
+
+EVENT 2112 - CUN Messner (1 duplicate)
+  77157 -> SR 192514 -> Original 74924
+
+EVENT 2113 - MZT Magnify Church 260213 (2 duplicates)
+  77158 -> SR 209872 -> Original 77025
+  77159 -> SR 209865 -> Original 77026
+
+EVENT 2118 - MZT First Baptist Church Olds 260417 (1 duplicate)
+  77175 -> SR 210382 -> Original 77082
+
+EVENT 2119 - MTY AIA 260307 (1 duplicate)
+  77169 -> SR 210118 -> Original 77044
+
+EVENT 2120 - MTY Bob Jones Academy 260307 (1 duplicate)
+  77170 -> SR 207566 -> Original 76934
+
+EVENT 2122 - MTY Liberty Bible Academy 260314 (1 duplicate)
+  77171 -> SR 209084 -> Original 76987
+
+EVENT 2133 - MTY Interns Jan 260105 (1 duplicate)
+  77126 -> SR 206234 -> Original 76847
+
+EVENT 2138 - MZT New City Presbyterian 260606 (1 duplicate)
+  77179 -> SR 209891 -> Original 77027
+
+EVENT 2144 - MZT CrossView Christian Church 260711 (3 duplicates)
+  77181 -> SR 180248 -> Original 25013 (Chris Ramos)
+  77182 -> SR 180428 -> Original 45909 (Holly Brewer)
+  77183 -> SR 186542 -> Original 29775 (Stewart Sheckler)
+
+EVENT 2150 - CUN Red Door Church 260601 (2 duplicates)
+  77177 -> SR 209793 -> Original 77011
+  77178 -> SR 209790 -> Original 77012
+
+═══════════════════════════════════════════════════════════════════
+TOTAL DUPLICATES: 68 (minus 10 already cleaned from Treece = 58 remaining)
+═══════════════════════════════════════════════════════════════════
+
+SUMMARY BY EVENT:
+- Event 2048: 1
+- Event 2097: 11
+- Event 2105 (Reger Trip): 9
+- Event 2106 (Treece Trip): 10 ✓ CLEANED
+- Event 2111 (Messner): 7
+- Event 2108 (Eastmont): 13
+- Event 2109 (Kings HS): 3
+- Event 2112 (Messner): 1
+- Event 2113 (Magnify): 2
+- Event 2118 (First Baptist Olds): 1
+- Event 2119 (AIA): 1
+- Event 2120 (Bob Jones): 1
+- Event 2122 (Liberty Bible): 1
+- Event 2133 (Interns): 1
+- Event 2138 (New City Presbyterian): 1
+- Event 2144 (CrossView): 3
+- Event 2150 (Red Door): 2

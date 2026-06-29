@@ -1,0 +1,756 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu("App Script Functions")
+    .addItem("Open AppScript Code","openAppScript")
+    .addItem("RunBudgetFormulas", "runBudgetFormulas")
+    .addItem("RequestBudget", "requestThisMonthBudget")
+    .addItem("LogAndClearMonthlyBudgetRequests" , "logAndClearMonthlyBudgetRequests")
+    .addItem("RunNonBudgetFormulas" , "runNonBudgetFormulas")
+    .addItem("LogAndClearMonthlyNonBudgetRequests" , "logAndClearMonthlyNonBudgetRequests")
+    .addToUi();
+}
+
+function openUrl(url){
+    var html = HtmlService.createHtmlOutput('<html><script>'
+        +'window.close = function(){window.setTimeout(function(){google.script.host.close()},9)};'
+        +'var a = document.createElement("a"); a.href="'+url+'"; a.target="_blank";'
+        +'if(document.createEvent){'
+        +'  var event=document.createEvent("MouseEvents");'
+        +'  if(navigator.userAgent.toLowerCase().indexOf("firefox")>-1){window.document.body.append(a)}'
+        +'  event.initEvent("click",true,true); a.dispatchEvent(event);'
+        +'}else{ a.click() }'
+        +'close();'
+        +'</script>'
+        // Offer URL as clickable link in case above code fails.
+        +'<body style="word-break:break-word;font-family:sans-serif;">Failed to open automatically. <a href="'+url+'" target="_blank" onclick="window.close()">Click here to proceed</a>.</body>'
+        +'<script>google.script.host.setHeight(40);google.script.host.setWidth(410)</script>'
+        +'</html>')
+    .setWidth( 90 ).setHeight( 1 );
+    SpreadsheetApp.getUi().showModalDialog( html, "Opening ..." );
+}
+
+function openAppScript() {
+    var scriptID = ScriptApp.getScriptId();
+    openUrl( 'https://script.google.com/home/projects/' + scriptID + '/edit');
+}
+
+// ** Budget Requests ** //
+function runBudgetFormulas() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Request: Budget")
+  var range = sheet.getRange("A:W");
+
+  // ** Query Budget ** //
+  var cell = sheet.getRange(("A6"));
+  cell.setFormula("=QUERY('Transfer budget'!A6:G)")
+
+  var clearRange = sheet.getRange("H6:V");
+  clearRange.clearContent();
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Budget MXN ** //
+  var cell = sheet.getRange("H"+lookuprange[0] + "H"+lookuprange[1]);
+  cell.setFormula("=IFERROR(INDEX(budget,match(A6,'Transfer budget'!$A:$A,0),match($D$2,'Transfer budget'!$5:$5,0)),)")
+
+  // ** Budget USD ** //
+  var cell = sheet.getRange("I"+lookuprange[0] + "I"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(H6),,IFERROR(H6/'Transfer budget'!$G$4,))")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  //cell.setFormula("=IF(J6=\"\",\"\",SUM(J6:L6))")
+  cell.setFormula("=SUM(J6:N6)")
+
+  // ** Budget over / (under) USD ** //
+  var cell = sheet.getRange("P"+lookuprange[0] + "P"+lookuprange[1]);
+  //cell.setFormula("=IF(J6=\"\",\"\",M6-I6)")
+  cell.setFormula("=IFERROR(O6-I6,\"\")")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  //cell.setFormula("=IF(J6=\"\",\"\",M6*O$3)")
+  cell.setFormula("=O6*Q$3")
+
+  // ** Budget over / (under) MXN ** //
+  var cell = sheet.getRange("R"+lookuprange[0] + "R"+lookuprange[1]);
+  //cell.setFormula("=IF(J6=\"\",\"\",O6-H6)")
+  cell.setFormula("=IFERROR(Q6-H6,\"\")")
+
+  // Transfer Month //
+  var cell = sheet.getRange("V"+lookuprange[0] + "V"+lookuprange[1]);
+  //cell.setFormula("=IF(J6=\"\",\"\",$D$2)")
+  cell.setFormula("=$D$2")
+
+  // YTD Budgeted Amount USD //
+  var cell = sheet.getRange("S"+lookuprange[0] + "S"+lookuprange[1]);
+  cell.setFormula("=IF($D$2='Transfer budget'!H$5,SUM('Transfer budget'!$V6),IF($D$2='Transfer budget'!I$5,SUM('Transfer budget'!$V6:$W6),IF($D$2='Transfer budget'!J$5,SUM('Transfer budget'!$V6:X6),IF($D$2='Transfer budget'!K$5,SUM('Transfer budget'!$V6:Y6),IF($D$2='Transfer budget'!L$5,SUM('Transfer budget'!$V6:Z6),IF($D$2='Transfer budget'!M$5,SUM('Transfer budget'!$V6:AA6),IF($D$2='Transfer budget'!N$5,SUM('Transfer budget'!$V6:AB6),IF($D$2='Transfer budget'!O$5,SUM('Transfer budget'!$V6:AC6),IF($D$2='Transfer budget'!P$5,SUM('Transfer budget'!$V6:AD6),IF($D$2='Transfer budget'!Q$5,SUM('Transfer budget'!$V6:AE6),IF($D$2='Transfer budget'!R$5,SUM('Transfer budget'!$V6:AF6),IF($D$2='Transfer budget'!S$5,SUM('Transfer budget'!$V6:AG6),))))))))))))")
+  /* Note that this YTD Budgeted Amout formula and other similar formulas in this workbook pull from the Transfer budget tab and include nested IF() statement to evaluate which month it is,
+  and thus, how many months of budget to sum. If we summed this from the log, like we do for YTD Requested/Actual, there is risk of error in the case of a month being logged more than once */
+
+  // YTD Actual Amount USD //
+  var cell = sheet.getRange("T"+lookuprange[0] + "T"+lookuprange[1]);
+  cell.setFormula("=O6+SUMIF('Log: YTD Budget'!$A6:$A,$A6,'Log: YTD Budget'!O6:O)")
+
+  // YTD over/under USD //
+  var cell = sheet.getRange("U"+lookuprange[0] + "U"+lookuprange[1]);
+  cell.setFormula("=T6-S6")
+
+}
+
+// ** Request this month's budget ** //
+function requestThisMonthBudget() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Request: Budget")
+  var source = sheet.getRange("I6:I");
+  var destination = sheet.getRange("J6:J");
+  var clearRange = sheet.getRange("J6:N");
+  clearRange.clearContent();
+  source.copyTo(destination, {contentsOnly:true});
+
+}
+
+// ** Log and clear monthly Budget Requests ** //
+function logAndClearMonthlyBudgetRequests() {
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var copySheet = ss.getSheetByName("Request: Budget")
+  var destinationSheet = ss.getSheetByName("Log: YTD Budget")
+  var source = copySheet.getRange("A6:W");
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = copySheet.getLastRow();
+
+  var timestampRange = copySheet.getRange("W"+lookuprange[0] + "W"+lookuprange[1]);
+  
+  var date = new Date();
+  var formattedDate = Utilities.formatDate(date, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "MM/dd/yyyy");
+  timestampRange.setValue(formattedDate);
+
+  var copyrange = [];
+  copyrange[1] = destinationSheet.getLastRow()+1;
+
+  var destination = destinationSheet.getRange("A" +copyrange[1]);
+  source.copyTo(destination, {contentsOnly:true});
+
+  var requestMonthlyBudgetRange = copySheet.getRange("J6:N");
+  requestMonthlyBudgetRange.clearContent();
+  timestampRange.clearContent();
+
+  var status = copySheet.getRange("G1:G4");
+  status.clearContent();
+
+  var month = copySheet.getRange("D2");
+  month.clearContent();
+  
+}
+
+// ** Clear Budget Requested Funds ** //
+  function clearBudgetRequestsContents() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Request: Budget")
+  var range = sheet.getRange("J6:N");
+  //var range = sheet.getRange("H6:U");
+  range.clearContent();
+
+  var month = sheet.getRange("D2");
+  month.clearContent();
+
+  var status = sheet.getRange("G1:G4");
+  status.clearContent();
+
+
+  }
+
+// ** Clear Budget Log Contents ** //
+  function clearLogContents() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Log: YTD Budget")
+  var range = sheet.getRange("A6:X");
+  range.clearContent();
+
+  }
+
+
+// ** Non-budget Requests ** //
+function runNonBudgetFormulas() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Request: Non-budget")
+  var range = sheet.getRange("A:Z");
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  //lookuprange[2] = "7:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=SUM(J6:N6)")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=$Q$3*O6")
+
+  // Transfer Month //
+  var cell = sheet.getRange("S"+lookuprange[0] + "S"+lookuprange[1]);
+  cell.setFormula("=$D$2")
+
+  // Data Validation Rule for Column G (Account/Program) //
+  /* IMPORTANT: This will not do anything if the validation rule is deleted from cell G6. I am not creating a validation rule here, 
+  I'm simply copying an existing rule down the column dynamically for any new rows that are entered */
+  /*var cell = sheet.getRange("G"+lookuprange[0] + "G"+lookuprange[1]);
+  var validationRuleLocation = sheet.getRange("G6")
+  var validationRule = validationRuleLocation.getDataValidation();
+  cell.setDataValidation(validationRule)*/
+
+}
+
+// ** Log and clear monthly Non-Budget Requests ** //
+function logAndClearMonthlyNonBudgetRequests() {
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var copySheet = ss.getSheetByName("Request: Non-budget")
+  var destinationSheet = ss.getSheetByName("Log: YTD Non-budget")
+  var source = copySheet.getRange("A6:T");
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = copySheet.getLastRow();
+
+  var timestampRange = copySheet.getRange("T"+lookuprange[0] + "T"+lookuprange[1]);
+  var date = new Date();
+  var formattedDate = Utilities.formatDate(date, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "MM/dd/yyyy");
+  timestampRange.setValue(formattedDate);
+
+  var copyrange = [];
+  copyrange[1] = destinationSheet.getLastRow()+1;
+
+  var destination = destinationSheet.getRange("A:T" +copyrange[1]);
+  source.copyTo(destination, {contentsOnly:true});
+
+  var clearRange = copySheet.getRange("A6:T");
+  clearRange.clearContent();
+  /*var clearDataValidationRange = copySheet.getRange("G7:G");
+  // Note here that the clearDataValidationRange begins at cell G7, so as to not delete the original rule in cell G6. See notes above //
+  clearDataValidationRange.clearDataValidations();*/
+
+  var month = copySheet.getRange("D2");
+  month.clearContent();
+
+  var status = copySheet.getRange("G1:G4");
+  status.clearContent();
+
+}
+
+// ** Clear Non-Budget Requested Funds ** //
+  function clearNonBudgetContents() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Request: Non-budget")
+  var range = sheet.getRange("A6:U");
+  range.clearContent();
+
+ }
+
+// ** Clear Non Budget Log Contents ** //
+  function clearNonBudgetLogContents() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Log: YTD Non-budget")
+  var range = sheet.getRange("A6:T");
+  range.clearContent();
+
+ }
+
+
+ // ** Report: Current Month Summary Budget Requests ** //
+function formulasCurrentMonthSummary() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Report: Current Month Request Summary")
+  var range = sheet.getRange("G:R");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Account/Program ** //
+  var cell = sheet.getRange("G6")
+  cell.setFormula("=UNIQUE('Transfer budget'!G6:G)")
+
+    var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Budget MXN ** //
+  var cell = sheet.getRange("H"+lookuprange[0] + "H"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!H:H)))")
+
+  // ** Budget USD ** //
+  var cell = sheet.getRange("I"+lookuprange[0] + "I"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!I:I)))")
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!J:J)))")
+
+  // ** Local Account 2 USD ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!K:K)))")
+
+  // ** Local Account 3 USD ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!L:L)))")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!M:M)))")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!N:N)))")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!O:O)))")
+
+  // ** Budget over / (under) USD ** //
+  var cell = sheet.getRange("P"+lookuprange[0] + "P"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!P:P)))")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!Q:Q)))")
+
+  // ** Budget over / (under) MXN ** //
+  var cell = sheet.getRange("R"+lookuprange[0] + "R"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Request: Budget'!$G:$G,$G6,'Request: Budget'!R:R)))")
+
+}
+
+// ** Report: Budget by Category ** //
+function formulasReportBudgetbyCategory() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Report: Budget by Category")
+  var range = sheet.getRange("G:R");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Account/Program ** //
+  var cell = sheet.getRange("G6")
+  cell.setFormula("=UNIQUE('Transfer budget'!G6:G)")
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Budget MXN ** //
+  var cell = sheet.getRange("H"+lookuprange[0] + "H"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($G$4='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$H$6:$H,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$H$6:$I,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$H$6:$J,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$H$6:$K,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$H$6:$L,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$H$6:$M,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$H$6:$N,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$H$6:$O,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$H$6:$P,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$H$6:$Q,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$H$6:$R,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$H$6:$S,$G6='Transfer budget'!$G$6:$G)),\"\"))))))))))))))")
+  /* Note that this YTD Budgeted Amout formula and other similar formulas in this workbook pull from the Transfer budget tab and include nested IF() statement to evaluate which month it is,
+  and thus, how many months of budget to sum. If we summed this from the log, like we do for YTD Requested/Actual, there is risk of error in the case of a month being logged more than once */
+
+  // ** Budget USD ** //
+  var cell = sheet.getRange("I"+lookuprange[0] + "I"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($G$4='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$V$6:$V,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$V$6:$W,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$V$6:$X,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$V$6:$Y,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$V$6:$Z,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$V$6:$AA,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$V$6:$AB,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$V$6:$AC,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$V$6:$AD,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$V$6:$AE,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$V$6:$AF,$G6='Transfer budget'!$G$6:$G)),IF($G$4='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$V$6:$AG,$G6='Transfer budget'!$G$6:$G)),\"\"))))))))))))))")
+  // See note above about YTD Budgeted Amount formulas
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!J:J)))")
+
+  // ** Local Account 2 USD ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!K:K)))")
+
+    // ** Local Account 3 USD ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!L:L)))")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!M:M)))")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!N:N)))")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!O:O)))")
+
+  // ** Budget over / (under) USD ** //
+  var cell = sheet.getRange("P"+lookuprange[0] + "P"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!P:P)))")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!Q:Q)))")
+
+  // ** Budget over / (under) MXN ** //
+  var cell = sheet.getRange("R"+lookuprange[0] + "R"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!R:R)))")
+
+}
+
+// ** Report: Budget Category by Month ** //
+function formulasReportBudgetCategoryByMonth() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Report: Budget Category by Month")
+  var range = sheet.getRange("G:R");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Account/Program ** //
+  var cell = sheet.getRange("G6")
+  cell.setFormula("=UNIQUE('Transfer budget'!G6:G)")
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Budget MXN ** //
+  var cell = sheet.getRange("H"+lookuprange[0] + "H"+lookuprange[1]);
+    cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($M$1='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$H$6:$H,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$H$6:$I,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$H$6:$J,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$H$6:$K,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$H$6:$L,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$H$6:$M,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$H$6:$N,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$H$6:$O,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$H$6:$P,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$H$6:$Q,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$H$6:$R,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$H$6:$S,$G6='Transfer budget'!$G$6:$G)),\"\"))))))))))))))")
+
+  // ** Budget USD ** //
+  var cell = sheet.getRange("I"+lookuprange[0] + "I"+lookuprange[1]);
+    cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($M$1='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$V$6:$V,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$V$6:$W,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$V$6:$X,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$V$6:$Y,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$V$6:$Z,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$V$6:$AA,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$V$6:$AB,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$V$6:$AC,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$V$6:$AD,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$V$6:$AE,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$V$6:$AF,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$V$6:$AG,$G6='Transfer budget'!$G$6:$G)),\"\"))))))))))))))")
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!J:J,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** Local Account 2 USD ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!K:K,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** Local Account 3 USD ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!L:L,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!M:M,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!N:N,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!O:O,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** Budget over / (under) USD ** //
+  var cell = sheet.getRange("P"+lookuprange[0] + "P"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!P:P,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + ""+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!Q:Q,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+  // ** Budget over / (under) MXN ** //
+  var cell = sheet.getRange("R"+lookuprange[0] + "R"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!R:R,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$V:$V,$M$1)))")
+
+}
+
+// ** Report: Budget by Item ** //
+function formulasReportBudgetbyItem() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Report: Budget by Item")
+  var range = sheet.getRange("A:R");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Coumns A-G ** //
+  var cell = sheet.getRange("A6")
+  cell.setFormula("=UNIQUE('Transfer budget'!A6:G)")
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Budget MXN ** //
+  var cell = sheet.getRange("H"+lookuprange[0] + "H"+lookuprange[1]);
+   cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($G$4='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$H$6:$H,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$H$6:$I,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$H$6:$J,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$H$6:$K,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$H$6:$L,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$H$6:$M,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$H$6:$N,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$H$6:$O,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$H$6:$P,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$H$6:$Q,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$H$6:$R,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$H$6:$S,$A6='Transfer budget'!$A$6:$A)),\"\"))))))))))))))")
+
+  // ** Budget USD ** //
+  var cell = sheet.getRange("I"+lookuprange[0] + "I"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($G$4='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$V$6:$V,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$V$6:$W,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$V$6:$X,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$V$6:$Y,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$V$6:$Z,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$V$6:$AA,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$V$6:$AB,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$V$6:$AC,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$V$6:$AD,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$V$6:$AE,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$V$6:$AF,$A6='Transfer budget'!$A$6:$A)),IF($G$4='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$V$6:$AG,$A6='Transfer budget'!$A$6:$A)),\"\"))))))))))))))")
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!J:J)))")
+
+  // ** Local Account USD 2 ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!K:K)))")
+
+  // ** Local Account USD 3 ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!L:L)))")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!M:M)))")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!N:N)))")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!O:O)))")
+
+  // ** Budget over / (under) USD ** //
+  var cell = sheet.getRange("P"+lookuprange[0] + "P"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!P:P)))")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!Q:Q)))")
+
+  // ** Budget over / (under) MXN ** //
+  var cell = sheet.getRange("R"+lookuprange[0] + "R"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIF('Log: YTD Budget'!$A:$A,$A6,'Log: YTD Budget'!R:R)))")
+
+}
+
+// ** Report: Non-budget by Category ** //
+function formulasReportNonBudgetbyCategory() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Report: Non-budget by Category")
+  var range = sheet.getRange("G:Q");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Account/Program ** //
+  var cell = sheet.getRange("G6")
+  cell.setFormula("=UNIQUE('Log: YTD Non-budget'!G6:G)")
+  //cell.setFormula("=SORT(FILTER(UNIQUE('Log: YTD Non-budget'!G6:G),UNIQUE('Log: YTD Non-budget'!G6:G)<>\"\"))")
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=SUMIF('Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!J:J)")
+
+  // ** Local Account USD 2 ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=SUMIF('Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!K:K)")
+
+  // ** Local Account USD 3 ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=SUMIF('Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!L:L)")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=SUMIF('Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!M:M)")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=SUMIF('Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!N:N)")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=SUMIF('Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!O:O)")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=SUMIF('Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!Q:Q)")
+
+}
+
+
+// ** Finance Summary Budget ** //
+function formulasFinanceSummaryBudget() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Finance Summary Budget")
+  var range = sheet.getRange("G:R");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Account/Program ** //
+  var cell = sheet.getRange("G6")
+  cell.setFormula("=UNIQUE('Transfer budget'!G6:G)")
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Budget MXN ** //
+  var cell = sheet.getRange("H"+lookuprange[0] + "H"+lookuprange[1]);
+    cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($M$1='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$H$6:$H,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$H$6:$I,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$H$6:$J,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$H$6:$K,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$H$6:$L,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$H$6:$M,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$H$6:$N,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$H$6:$O,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$H$6:$P,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$H$6:$Q,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$H$6:$R,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$H$6:$S,$G6='Transfer budget'!$G$6:$G)),\"\"))))))))))))))")
+
+  // ** Budget USD ** //
+  var cell = sheet.getRange("I"+lookuprange[0] + "I"+lookuprange[1]);
+    cell.setFormula("=IF(ISBLANK(G6),\"\",(IF($M$1='Transfer budget'!$H$5,SUM(FILTER('Transfer budget'!$V$6:$V,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$I$5,SUM(FILTER('Transfer budget'!$V$6:$W,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$J$5,SUM(FILTER('Transfer budget'!$V$6:$X,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$K$5,SUM(FILTER('Transfer budget'!$V$6:$Y,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$L$5,SUM(FILTER('Transfer budget'!$V$6:$Z,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$M$5,SUM(FILTER('Transfer budget'!$V$6:$AA,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$N$5,SUM(FILTER('Transfer budget'!$V$6:$AB,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$O$5,SUM(FILTER('Transfer budget'!$V$6:$AC,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$P$5,SUM(FILTER('Transfer budget'!$V$6:$AD,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$Q$5,SUM(FILTER('Transfer budget'!$V$6:$AE,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$R$5,SUM(FILTER('Transfer budget'!$V$6:$AF,$G6='Transfer budget'!$G$6:$G)),IF($M$1='Transfer budget'!$S$5,SUM(FILTER('Transfer budget'!$V$6:$AG,$G6='Transfer budget'!$G$6:$G)),\"\"))))))))))))))")
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!J:J,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** Local Account 2 USD ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!K:K,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** Local Account 3 USD ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!L:L,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!M:M,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!N:N,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!O:O,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** Budget over / (under) USD ** //
+  var cell = sheet.getRange("P"+lookuprange[0] + "P"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!P:P,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!Q:Q,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+  // ** Budget over / (under) MXN ** //
+  var cell = sheet.getRange("R"+lookuprange[0] + "R"+lookuprange[1]);
+  cell.setFormula("=IF(ISBLANK(G6),\"\",(SUMIFS('Log: YTD Budget'!R:R,'Log: YTD Budget'!$G:$G,$G6,'Log: YTD Budget'!$W:$W,$M$1)))")
+
+}
+
+
+// ** Finance Summary Non-Budget ** //
+function formulasFinanceSummaryNonBudget() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Finance Summary Non-Budget")
+  var range = sheet.getRange("G:R");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Account/Program ** //
+  var cell = sheet.getRange("G6")
+  cell.setFormula("=UNIQUE('Log: YTD Non-budget'!G6:G)")
+  //cell.setFormula("=SORT(FILTER(UNIQUE('Log: YTD Non-budget'!G6:G),UNIQUE('Log: YTD Non-budget'!G6:G)<>\"\"))")
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=SUMIFS('Log: YTD Non-budget'!J:J,'Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!$T:$T,$O$1)")
+
+  // ** Local Account 2 USD ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=SUMIFS('Log: YTD Non-budget'!K:K,'Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!$T:$T,$O$1)")
+
+  // ** Local Account 3 USD ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=SUMIFS('Log: YTD Non-budget'!L:L,'Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!$T:$T,$O$1)")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=SUMIFS('Log: YTD Non-budget'!M:M,'Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!$T:$T,$O$1)")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=SUMIFS('Log: YTD Non-budget'!N:N,'Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!$T:$T,$O$1)")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=SUMIFS('Log: YTD Non-budget'!O:O,'Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!$T:$T,$O$1)")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=SUMIFS('Log: YTD Non-budget'!Q:Q,'Log: YTD Non-budget'!$G:$G,$G6,'Log: YTD Non-budget'!$T:$T,$O$1)")
+
+}
+
+
+// ** Finance Summary Combined ** //
+function formulasFinanceSummaryCombined() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Combined Finance Sumary")
+  var range = sheet.getRange("G:P");
+
+  var clearRange = sheet.getRange("G6:R");
+  clearRange.clearContent();
+
+  // ** Account/Program ** //
+  var cell = sheet.getRange("G6")
+  cell.setFormula("=UNIQUE(QUERY(S6:S,\"SELECT S WHERE S IS NOT NULL\"))")
+
+  var lookuprange = [];
+  lookuprange[0] = "6:";
+  lookuprange[1] = sheet.getLastRow();
+
+    // ** Budget MXN ** //
+  var cell = sheet.getRange("H"+lookuprange[0] + "H"+lookuprange[1]);
+    cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,T:T),\"\")")
+
+  // ** Budget USD ** //
+  var cell = sheet.getRange("I"+lookuprange[0] + "I"+lookuprange[1]);
+    cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,U:U),\"\")")
+
+  // ** Local Account USD ** //
+  var cell = sheet.getRange("J"+lookuprange[0] + "J"+lookuprange[1]);
+  cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,V:V),\"\")")
+
+  // ** Local Account USD 2 ** //
+  var cell = sheet.getRange("K"+lookuprange[0] + "K"+lookuprange[1]);
+  cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,W:W),\"\")")
+
+  // ** Local Account USD 3 ** //
+  var cell = sheet.getRange("L"+lookuprange[0] + "L"+lookuprange[1]);
+  cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,X:X),\"\")")
+
+  // ** PNC USD ** //
+  var cell = sheet.getRange("M"+lookuprange[0] + "M"+lookuprange[1]);
+  cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,Y:Y),\"\")")
+
+  // ** Payments to others USD ** //
+  var cell = sheet.getRange("N"+lookuprange[0] + "N"+lookuprange[1]);
+  cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,Z:Z),\"\")")
+
+  // ** Total USD ** //
+  var cell = sheet.getRange("O"+lookuprange[0] + "O"+lookuprange[1]);
+  cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,AA:AA),\"\")")
+
+  // ** Budget over / (under) USD ** //
+  var cell = sheet.getRange("P"+lookuprange[0] + "P"+lookuprange[1]);
+   cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,AB:AB),\"\")")
+
+  // ** Total MXN ** //
+  var cell = sheet.getRange("Q"+lookuprange[0] + "Q"+lookuprange[1]);
+  cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,AC:AC),\"\")")
+
+  // ** Budget over / (under) MXN ** //
+  var cell = sheet.getRange("R"+lookuprange[0] + "R"+lookuprange[1]);
+   cell.setFormula("=IF($G6<>\"\",SUMIF($S:$S,$G6,AD:AD),\"\")")
+
+}
+
+
+
+
+
+
+
+
+
+
+

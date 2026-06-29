@@ -1,0 +1,66 @@
+INSTRUCTIONS,,
+1. The site completes the Request: Budget and Request: Non-Budget tabs each month.,,
+2. Approvals must be made each month using the checkboxes.,,
+3. US Finance will process the request and clear the sheet for the next request.,,
+,,
+Do NOT,,
+Copy this file or download it as another file type,,
+Duplicate or rename tabs,,
+Add or remove columns,,
+>> These actions would break the AppScripts running this program,,
+,,
+SETUP,,
+1. Complete the following,,
+,Site,CUN
+,Current year,2025
+,Local currency code,MXN
+,Name of Local Account 1,Banorte
+,Name of Local Account 2,Local account 2
+,Name of Local Account 3,Local account 3
+,,
+"2. As needed during the year, list non-budget expense categories to include in this template dropdown list:",,
+,,Mission Trips: Food
+,,Mission Trips: Projects
+,,Mission Trips
+,,Projects & Improvements
+,,Ministry Partnerships
+,,Mission Trips Tools
+,,Mission Trip Transportation
+,,Van 
+,,Child Sponsorship Gifts
+,,Mission Trips Hotel
+,,Anniversary Award
+,,Buress Donations All Programs
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+3. The following is for your reference,,
+,Budget exchange rate,17
+,"Rate on: Jun 04, 2026",17.28
+,,
+BUDGET LINKS,,
+Cancun,CUN,https://docs.google.com/spreadsheets/d/1huRbT13CNHOFAVCf4Cj9wm76jNE_6fMKUygGfRzoQRg
+Culiacan,CUL,https://docs.google.com/spreadsheets/d/1ps7S-Mk0HDAyvuJZ6dmyi9fV8tIyALT1wF63Cz-CoKI
+Linares,LIN,https://docs.google.com/spreadsheets/d/1oIOirAMVySnyf-FpVyo1pPqJP9NFSGcXHe6WC4Do6J0
+Monterrey,MTY,https://docs.google.com/spreadsheets/d/1aiyI5Zmh9U_5X25xw1LSvEFB55XjjAGo8pypazjP0d4
+Mazatlan,MZT,https://docs.google.com/spreadsheets/d/1ZvUwRjJNFsU4gPkHWKwm_JAx4EQ0QlsWilElXPrIpww
+India,IND,https://docs.google.com/spreadsheets/d/1iDutrJsX3bDEF-Gos_3YqMxyoQlY_qflEC2ru8OP3K4
+Nigeria,NIG,https://docs.google.com/spreadsheets/d/1liICbF7OWsCQVemUuazqiwEgZmzRsdQviO7As1vkqos
+Haiti,HTI,https://docs.google.com/spreadsheets/d/149VFkU4h59aD7lJClYnBqQFYW4TmoLlTXLCcTRB1g5Y
+Dominican Republic,DOM,https://docs.google.com/spreadsheets/d/1Yg2cP0qT7gJ7MnFe05ZsKR_p_p_Btv9fT5Xwqf74Prs
+Cincinnati,CIN,https://docs.google.com/spreadsheets/d/1xyXa4RUpwLDoJcUUZtQsy8661u9Ir9cRFtDfyO_tv1g

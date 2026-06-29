@@ -1,0 +1,75 @@
+App Script Breakdown
+====================
+
+High-level purpose
+------------------
+This Apps Script is attached to a Google Sheets budget workbook. It automates:
+- Entering monthly budget requests (budgeted + non-budget).
+- Copying those requests into year-to-date log tabs with timestamps.
+- Clearing request and log ranges.
+- Populating multiple report tabs (by category, by item, by month, finance summary) with formulas.
+- Providing a custom menu so you can run routines from the spreadsheet UI.
+
+Menu: "App Script Functions"
+----------------------------
+
+1) Open AppScript Code  ->  openAppScript()
+   - Purpose: Opens the Apps Script project for this spreadsheet in a new browser tab.
+   - Sheets/Ranges: None (UI only).
+
+2) RunBudgetFormulas  ->  runBudgetFormulas()
+   - Purpose: Refreshes formulas for the budget request sheet, pulling in current budget and calculating totals/YTDs.
+   - Sheets:
+     - Request: Budget (main)
+     - Reads: Transfer budget, Log: YTD Budget
+   - Key actions on Request: Budget:
+     - A6: =QUERY('Transfer budget'!A6:G)
+     - Clears H6:V.
+     - For rows 6 to last row sets formulas for:
+       - H: Budget MXN (lookup in Transfer budget/budget range).
+       - I: Budget USD (convert H using FX rate in 'Transfer budget'!G4).
+       - O: Total USD = SUM(J6:N6).
+       - P: Budget over/(under) USD = IFERROR(O6-I6,"").
+       - Q: Total MXN = O6*Q$3.
+       - R: Budget over/(under) MXN = IFERROR(Q6-H6,"").
+       - V: Transfer Month = $D$2.
+       - S: YTD Budgeted USD via nested IF+SUM over Transfer budget month columns.
+       - T: YTD Actual USD from current request + SUMIF over Log: YTD Budget.
+       - U: YTD over/(under) USD = T6-S6.
+
+3) RequestBudget  ->  requestThisMonthBudget()
+   - Purpose: Copies this month’s budget figures into the request columns as values.
+   - Sheet: Request: Budget
+   - Key actions:
+     - Clears J6:N.
+     - Copies I6:I (Budget USD) to J6:J as values only.
+
+4) LogAndClearMonthlyBudgetRequests  ->  logAndClearMonthlyBudgetRequests()
+   - Purpose: Posts the current month’s budget requests to the YTD log and resets the request sheet.
+   - Sheets:
+     - Request: Budget (source)
+     - Log: YTD Budget (destination)
+   - Key actions on Request: Budget:
+     - Sets current date (MM/dd/yyyy) into W6:W (timestamp).
+     - Copies A6:W to the next empty row in Log: YTD Budget (values only).
+     - Clears J6:N (request amounts).
+     - Clears W6:W (timestamp), G1:G4 (status), and D2 (month).
+
+5) RunNonBudgetFormulas  ->  runNonBudgetFormulas()
+   - Purpose: Refreshes formulas for non-budget requests.
+   - Sheet: Request: Non-budget
+   - Key actions for rows 6 to last row:
+     - O: Total USD = SUM(J6:N6).
+     - Q: Total MXN = $Q$3*O6.
+     - S: Transfer Month = $D$2.
+
+6) LogAndClearMonthlyNonBudgetRequests  ->  logAndClearMonthlyNonBudgetRequests()
+   - Purpose: Posts non-budget requests to the YTD non-budget log and clears the request sheet.
+   - Sheets:
+     - Request: Non-budget (source)
+     - Log: YTD Non-budget (destination)
+   - Key actions on Request: Non-budget:
+     - Sets current date (MM/dd/yyyy) into T6:T (timestamp).
+     - Copies A6:T to the next empty row in Log: YTD Non-budget (values only).
+     - Clears A6:T.
+     - Clears D2 (month) and G1:G4 (status).

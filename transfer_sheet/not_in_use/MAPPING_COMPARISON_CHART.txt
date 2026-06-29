@@ -1,0 +1,160 @@
+═══════════════════════════════════════════════════════════════════════════════
+COMPLETE MAPPING COMPARISON: CURRENT vs CORRECTED
+═══════════════════════════════════════════════════════════════════════════════
+
+SUMMARY:
+- Total mappings in CURRENT file: 79 (includes wrong duplicates + new people)
+- Total mappings in CORRECTED file: 95 (all correct original IDs only)
+- Mappings that need correction: 68
+- New mappings to remove: 11 (will be recreated on next sync)
+
+═══════════════════════════════════════════════════════════════════════════════
+68 DUPLICATE MAPPINGS - SIDE BY SIDE COMPARISON
+═══════════════════════════════════════════════════════════════════════════════
+
+SR ID  | CURRENT (WRONG) | CORRECTED (RIGHT) | Name (from SR)
+-------|-----------------|-------------------|----------------------------------
+180248 | 77181 ❌        | 25013 ✓          | Chris Ramos
+180426 | 77105 ❌        | 49725 ✓          | Emily Sharp
+180428 | 77182 ❌        | 45909 ✓          | Holly Brewer
+186542 | 77183 ❌        | 29775 ✓          | Stewart Sheckler
+192514 | 77157 ❌        | 74924 ✓          | Holly Avery
+198806 | 77107 ❌        | 10958 ✓          | (participant)
+199479 | 77108 ❌        | 75072 ✓          | (participant)
+199827 | 77106 ❌        | 75105 ✓          | (participant)
+199950 | 77111 ❌        | 75123 ✓          | (participant)
+199951 | 77113 ❌        | 75124 ✓          | (participant)
+199981 | 77115 ❌        | 75126 ✓          | (participant)
+200064 | 77114 ❌        | 75134 ✓          | Susanna Filippi
+200118 | 77109 ❌        | 75133 ✓          | (participant)
+200119 | 77116 ❌        | 75135 ✓          | (participant)
+200198 | 77110 ❌        | 76153 ✓          | Kirianna Dorgan
+200368 | 77117 ❌        | 26035 ✓          | (participant)
+201634 | 77125 ❌        | 76414 ✓          | (participant)
+201635 | 77118 ❌        | 76408 ✓          | (participant)
+201637 | 77120 ❌        | 76410 ✓          | (participant)
+201761 | 77121 ❌        | 76411 ✓          | Jeremy Conn
+201858 | 77123 ❌        | 76409 ✓          | Mike Fiegel
+201859 | 77119 ❌        | 76409 ✓          | Dawens Fiegel
+201860 | 77124 ❌        | 40130 ✓          | Peyton Fiegel
+202178 | 77122 ❌        | 76412 ✓          | Matthew Conn
+203075 | 77112 ❌        | 76549 ✓          | (participant)
+205693 | 77136 ❌        | 67227 ✓          | Scarlett Treece
+205699 | 77148 ❌        | 76827 ✓          | (participant)
+206055 | 77135 ❌        | 76837 ✓          | (participant)
+206234 | 77126 ❌        | 76847 ✓          | (participant)
+206243 | 77131 ❌        | 67531 ✓          | Levi Treece
+206245 | 77133 ❌        | 67532 ✓          | Nathan Treece
+206246 | 77127 ❌        | 77083 ✓          | Adalyn Treece
+206315 | 77129 ❌        | 52804 ✓          | Jason C. Treece
+206445 | 77134 ❌        | 67540 ✓          | Nathan Wesson
+206579 | 77164 ❌        | 76885 ✓          | Katheryn Endress
+206691 | 77168 ❌        | 76888 ✓          | William Endress
+207184 | 77137 ❌        | 76902 ✓          | (participant)
+207566 | 77170 ❌        | 76934 ✓          | Ginger Ericson
+207679 | 77150 ❌        | 76945 ✓          | (participant)
+207686 | 77151 ❌        | 76946 ✓          | (participant)
+207699 | 77156 ❌        | 76951 ✓          | Zoe Strickland
+207843 | 77145 ❌        | 76950 ✓          | Charles Abellera
+207898 | 77149 ❌        | 76952 ✓          | Martin Stunkel
+208063 | 77146 ❌        | 76955 ✓          | Christine Sprando
+208154 | 77153 ❌        | 76956 ✓          | (participant)
+208198 | 77155 ❌        | 76964 ✓          | (participant)
+208200 | 77152 ❌        | 76963 ✓          | (participant)
+208561 | 77130 ❌        | 76961 ✓          | klowes Wesson
+208604 | 77147 ❌        | 76962 ✓          | (participant)
+209084 | 77171 ❌        | 76987 ✓          | Cynthia Tann
+209418 | 77128 ❌        | 67536 ✓          | (participant)
+209790 | 77178 ❌        | 77012 ✓          | Duane Davis
+209793 | 77177 ❌        | 77011 ✓          | Connie Davis
+209865 | 77159 ❌        | 77026 ✓          | Lori Wasson
+209872 | 77158 ❌        | 77025 ✓          | Emily Wiarda
+209891 | 77179 ❌        | 77027 ✓          | Ryan Zhang
+209989 | 77142 ❌        | 77033 ✓          | Steve Vianello
+210006 | 77132 ❌        | 67534 ✓          | (participant)
+210052 | 77141 ❌        | 77040 ✓          | Kent Falknor
+210118 | 77169 ❌        | 77044 ✓          | Quinn Bezenah
+210270 | 77143 ❌        | 77078 ✓          | Steven Craig
+210278 | 77154 ❌        | 77080 ✓          | (participant)
+210280 | 77144 ❌        | 77079 ✓          | (participant)
+210371 | 77138 ❌        | 77068 ✓          | Jeff Bahl
+210377 | 77160 ❌        | 77081 ✓          | Alexander Garvin
+210382 | 77175 ❌        | 77082 ✓          | (participant)
+210392 | 77139 ❌        | 3891 ✓           | Jerod Fritz
+210393 | 77140 ❌        | 7164 ✓           | Joshua Deeter
+
+═══════════════════════════════════════════════════════════════════════════════
+11 NEW PARTICIPANT MAPPINGS TO REMOVE (will be recreated correctly on next sync)
+═══════════════════════════════════════════════════════════════════════════════
+
+SR ID  | CURRENT        | CORRECTED       | Name (from SR)
+-------|----------------|-----------------|----------------------------------
+210503 | 77174 ❌       | (not in file)   | (new participant)
+210508 | 77176 ❌       | (not in file)   | (new participant)
+210565 | 77173 ❌       | (not in file)   | Kimberly Ryan
+210570 | 77172 ❌       | (not in file)   | Henry Ryan
+210645 | 77165 ❌       | (not in file)   | (new participant)
+210646 | 77161 ❌       | (not in file)   | (new participant)
+210647 | 77166 ❌       | (not in file)   | Owen Chappel
+210651 | 77167 ❌       | (not in file)   | Tyler Webb
+210652 | 77163 ❌       | (not in file)   | Georgia Webb
+210659 | 77184 ❌       | (not in file)   | Madison Sheckler (test case)
+210660 | 77162 ❌       | (not in file)   | Ellie Sharp
+
+═══════════════════════════════════════════════════════════════════════════════
+27 CORRECT MAPPINGS (unchanged in both files)
+═══════════════════════════════════════════════════════════════════════════════
+
+These mappings are CORRECT in both current and corrected files:
+
+SR ID  | NXT ID  | Notes
+-------|---------|------------------------------------------------------------------
+180492 | 64155   | ✓ Correct
+185343 | 74841   | ✓ Correct
+185339 | 74837   | ✓ Correct
+188103 | 74909   | ✓ Correct (Katie Adams)
+180446 | 64154   | ✓ Correct
+146349 | 74787   | ✓ Correct
+146351 | 74788   | ✓ Correct
+146350 | 74900   | ✓ Correct
+195578 | 74788   | ✓ Correct
+187491 | 74326   | ✓ Correct
+197979 | 74914   | ✓ Correct
+197987 | 29775   | ✓ Correct
+198071 | 74854   | ✓ Correct
+182412 | 74787   | ✓ Correct
+197981 | 74900   | ✓ Correct
+194875 | 74925   | ✓ Correct
+198200 | 74926   | ✓ Correct
+186042 | 74928   | ✓ Correct
+194900 | 74929   | ✓ Correct
+194924 | 74930   | ✓ Correct
+194928 | 74931   | ✓ Correct
+194931 | 74932   | ✓ Correct
+194930 | 74933   | ✓ Correct
+198099 | 74942   | ✓ Correct
+198464 | 74955   | ✓ Correct
+198478 | 74956   | ✓ Correct
+198477 | 74957   | ✓ Correct
+198541 | 74998   | ✓ Correct
+
+═══════════════════════════════════════════════════════════════════════════════
+ACTION PLAN
+═══════════════════════════════════════════════════════════════════════════════
+
+1. BACKUP current (corrupted) mapping:
+   cp data/constituent_mapping.json data/constituent_mapping_BAD_BACKUP.json
+
+2. REPLACE with corrected mapping:
+   cp constituent_mapping_CORRECTED.json data/constituent_mapping.json
+
+3. DELETE from NXT:
+   - All 79 duplicate NXT constituents (77105-77184)
+   - See DUPLICATES_TO_DELETE.txt for full list
+
+4. RE-RUN sync:
+   - Will use correct mappings for the 68 duplicate SR IDs
+   - Will recreate the 11 new participants correctly
+   - Name normalization fix will prevent future duplicates
+
+═══════════════════════════════════════════════════════════════════════════════
