@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { MONTHS } from '@/types'
 import { formatCurrency } from '@/lib/utils'
+import { notifyStatusChange } from '@/lib/notifications'
 
 interface InOutItem {
   program_id: string
@@ -117,6 +118,7 @@ export default function InOutRequest() {
     },
     onSuccess: (req) => {
       queryClient.invalidateQueries({ queryKey: ['requests', siteId] })
+      if (req.status === 'submitted') notifyStatusChange(req.id, 'submitted')
       navigate(`/site/request/${req.id}`)
     },
   })

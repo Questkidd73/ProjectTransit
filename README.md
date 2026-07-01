@@ -113,11 +113,28 @@ RLS policies enforce: site_staff can only see/edit their own site's data (and on
 ### Budget sync service (`app/supabase/budget_sync_service.py`)
 A standalone Python script (not part of the deployed web app) that reads the legacy "Local Budget by Program" Google Sheet and the "Setup" tab, and upserts into `budget_line_items`, `site_productos`, `site_clases`, and `site_categories`. This is how each site's approved budget ceiling gets into the app. Run manually or on a schedule (cron) wherever it's hosted — it needs `service_account.json` (Google service account) and Supabase service-role credentials, both of which are gitignored and must be provisioned separately from the web app.
 
+### Email notifications
+`app/api/send-notification.ts` is a Vercel Serverless Function that sends transactional emails via Google Workspace SMTP (Gmail SMTP + App Password — no third-party email vendor). `app/src/lib/notifications.ts` determines recipients and calls it after each status-changing action:
+
+| Event | Notifies |
+|---|---|
+| Request submitted | Finance + Admin |
+| Changes requested | Site staff at that site |
+| Approved | Site staff at that site |
+| Funds sent | Site staff at that site |
+| Receipt confirmed | Finance + Admin |
+
+Notifications are best-effort — a failed send is logged to the console but never blocks the underlying status change.
+
+**Required Vercel environment variables** (in addition to the `VITE_SUPABASE_*` ones):
+- `GMAIL_USER` — the sending mailbox, e.g. `notifications@back2back.org`
+- `GMAIL_APP_PASSWORD` — a 16-character [Google App Password](https://myaccount.google.com/apppasswords) for that mailbox (requires 2-Step Verification enabled on the account)
+
 ### Deployment
 - **Frontend:** Vercel, auto-deploys from the `main` branch of `Questkidd73/ProjectTransit`
   - Root Directory: `app`
   - Build Command: `npm run build` (runs `tsc && vite build` — build fails on any TS error)
-  - Env vars set in Vercel dashboard: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+  - Env vars set in Vercel dashboard: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`
 - **Backend:** Supabase project (hosted) — schema managed via SQL files in `app/supabase/`, applied manually through the Supabase SQL Editor
 - **Budget sync:** runs separately (currently manual/local) — not deployed to Vercel
 
@@ -137,15 +154,16 @@ npm run dev
 - Spending Plan with Producto/Clase/Category hierarchy, budget ceiling comparison, and localStorage month/year persistence — **working**
 - Site/Finance/Admin role separation with RLS — **working**
 - Edit/delete permissions for drafts, changes-requested, and finance overrides — **working**
-- Budget sync from Google Sheets — **working**, but run manually/locally (not scheduled)
+- Budget sync from Google Sheets — **working**, but run manually/locally (not scheduled) — **automation deferred until the full budget rollout**
 - Deployed to Vercel, connected to production Supabase — **live**
-- Users provisioned manually per-site in Supabase (`profiles` table) — **manual process today**
+- Admin "Add User" flow — **done** — create users + assign role/site directly from Admin → Users, no manual Table Editor step
+- Email notifications on status changes — **done** — submitted/changes-requested/approved/sent/received all trigger emails via Google Workspace SMTP (see below); requires `GMAIL_USER` / `GMAIL_APP_PASSWORD` to be set in Vercel
 
 ## 4. Suggested next steps
 
-1. **Automate the budget sync** — host `budget_sync_service.py` somewhere it can run on a schedule (e.g. a small cron job on existing sync infrastructure), instead of running it manually.
-2. **Streamline user onboarding** — right now adding a user requires manually inserting into `profiles` via the Supabase Table Editor. Consider an Admin UI flow (invite + auto-assign role/site) to remove that manual step.
-3. **Rotate/secure the sync credentials** — `service_account.json` and the Supabase service-role key used by the sync script should live somewhere safer than a local `.env`/JSON file if this becomes a recurring, unattended job.
-4. **Add basic notifications** — e.g. email when a request is submitted, changes are requested, or funds are disbursed, so Finance/Site staff don't have to poll the app.
-5. **Testing pass with real users** — now that a couple of accounts are set up, do a walkthrough of the full lifecycle (spending plan → submit → approve → disburse → receive) with an actual site user to catch UX gaps.
+1. ~~Automate the budget sync~~ — **deferred** until the full budget rollout is ready.
+2. ~~Streamline user onboarding~~ — **done**.
+3. **Secure the sync credentials** — `service_account.json` and the Supabase service-role key used by `budget_sync_service.py` should live somewhere safer than local files once the sync becomes a recurring, unattended job.
+4. ~~Add basic notifications~~ — **done**.
+5. **Testing pass with real users** — do a walkthrough of the full lifecycle (spending plan → submit → approve → disburse → receive) with an actual site user to catch UX gaps.
 6. **Custom domain (optional)** — replace `projectransit.vercel.app` with a branded domain if this becomes long-term infrastructure.

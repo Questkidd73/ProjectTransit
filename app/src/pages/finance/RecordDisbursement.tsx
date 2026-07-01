@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { TransferRequest, TRANSFER_METHODS } from '@/types'
 import { formatCurrency } from '@/lib/utils'
+import { notifyStatusChange } from '@/lib/notifications'
 
 export default function RecordDisbursement() {
   const { id } = useParams<{ id: string }>()
@@ -57,6 +58,7 @@ export default function RecordDisbursement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['finance-requests'] })
+      notifyStatusChange(id!, 'sent')
       navigate('/finance')
     },
   })

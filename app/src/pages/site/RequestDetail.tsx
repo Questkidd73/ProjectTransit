@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { TransferRequest, STATUS_LABELS, STATUS_COLORS } from '@/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { notifyStatusChange } from '@/lib/notifications'
 
 export default function RequestDetail() {
   const { id } = useParams<{ id: string }>()
@@ -55,6 +56,7 @@ export default function RequestDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['request', id] })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+      notifyStatusChange(id!, 'received')
     },
   })
 

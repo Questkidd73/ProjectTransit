@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { TransferRequest, STATUS_LABELS, STATUS_COLORS } from '@/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { notifyStatusChange } from '@/lib/notifications'
 
 export default function ReviewRequest() {
   const { id } = useParams<{ id: string }>()
@@ -41,8 +42,9 @@ export default function ReviewRequest() {
         .eq('id', id!)
       if (error) throw error
     },
-    onSuccess: () => {
+    onSuccess: (_, action) => {
       queryClient.invalidateQueries({ queryKey: ['finance-requests'] })
+      notifyStatusChange(id!, action === 'approve' ? 'approved' : 'changes_requested')
       navigate('/finance')
     },
   })

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { MONTHS } from '@/types'
 import { calcUsdEquivalent, formatCurrency } from '@/lib/utils'
+import { notifyStatusChange } from '@/lib/notifications'
 
 interface RequestRow {
   program_id: string
@@ -250,6 +251,7 @@ export default function NewRequest() {
     onSuccess: (req) => {
       queryClient.invalidateQueries({ queryKey: ['requests', siteId] })
       queryClient.invalidateQueries({ queryKey: ['request', editId] })
+      if (req.status === 'submitted') notifyStatusChange(req.id, 'submitted')
       navigate(`/site/request/${req.id}`)
     },
   })
